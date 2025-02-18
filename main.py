@@ -142,22 +142,26 @@ st.markdown("""
         :root {
             --primary-color: #1E90FF;
             --primary-hover: #007BFF;
-            --secondary-color: #6c757d;
-            --secondary-hover: #5a6268;
-            --background-color: #FAFAFA;
+            --secondary-color: #FFA500;
+            --secondary-hover: #FF8C00;
+            --background-color: #F5F5F5;
             --container-bg: #FFFFFF;
-            --upload-area-bg: #F0F2F6;
-            --upload-area-hover: #E0E3E9;
-            --result-bg: #F0F2F6;
+            --upload-area-bg: #E0F7FA;
+            --upload-area-hover: #B2EBF2;
+            --result-bg: #E0F7FA;
             --text-color: #333333;
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --background-color: #0E1117;
+                --primary-color: #1E90FF;
+                --primary-hover: #007BFF;
+                --secondary-color: #FFA500;
+                --secondary-hover: #FF8C00;
+                --background-color: #2E2E2E;
                 --container-bg: #1E1E1E;
-                --upload-area-bg: #2E2E2E;
-                --upload-area-hover: #3E3E3E;
-                --result-bg: #2E2E2E;
+                --upload-area-bg: #37474F;
+                --upload-area-hover: #455A64;
+                --result-bg: #37474F;
                 --text-color: #FAFAFA;
             }
         }
@@ -204,4 +208,3 @@ if uploaded_file is not None:
 
             except Exception as e:
                 st.error(f"Error: {str(e)}")
-
