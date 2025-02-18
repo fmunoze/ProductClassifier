@@ -59,11 +59,81 @@ transform = transforms.Compose([
 # Clases del modelo
 classes = ['jeans', 'sofa', 'tshirt', 'tv']
 
+# Estilo personalizado con HTML y CSS en Streamlit
+st.markdown("""
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        .upload-area {
+            border: 2px dashed #007BFF;
+            padding: 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            background-color: #e9f5ff;
+        }
+        .upload-area:hover {
+            background-color: #d0ebff;
+        }
+        #preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Interfaz de Streamlit
-st.title("Clasificador de Productos")
+st.markdown("""
+    <div class="container">
+        <h1>Clasificador de Productos</h1>
+        <p>Sube una imagen de un producto para clasificarlo</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Subir una imagen
-uploaded_file = st.file_uploader("Sube una imagen", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], key="file-uploader")
 
 if uploaded_file is not None:
     # Mostrar la imagen subida
@@ -71,19 +141,29 @@ if uploaded_file is not None:
     st.image(image, caption='Imagen subida', use_column_width=True)
 
     # Realizar la predicción
-    try:
-        image = transform(image).unsqueeze(0)  # Añadir una dimensión de batch
+    if st.button("🔍 Predecir", key="predict-btn"):
+        try:
+            image = transform(image).unsqueeze(0)  # Añadir una dimensión de batch
 
-        with torch.no_grad():
-            outputs = model(image)
-            _, predicted = torch.max(outputs, 1)
-            confidence = torch.nn.functional.softmax(outputs, dim=1)[0] * 100
+            with torch.no_grad():
+                outputs = model(image)
+                _, predicted = torch.max(outputs, 1)
+                confidence = torch.nn.functional.softmax(outputs, dim=1)[0] * 100
 
-        # Obtener la clase predicha y la confianza
-        predicted_class = classes[predicted.item()]
-        confidence_value = confidence[predicted.item()].item()
+            # Obtener la clase predicha y la confianza
+            predicted_class = classes[predicted.item()]
+            confidence_value = confidence[predicted.item()].item()
 
-        st.success(f"Predicción: {predicted_class} (Confianza: {confidence_value:.2f}%)")
+            st.markdown(f"""
+                <div id="result">
+                    <p><strong>Categoría:</strong> <span id="predicted-class">{predicted_class}</span></p>
+                    <p><strong>Confianza:</strong> <span id="confidence">{confidence_value:.2f}%</span></p>
+                </div>
+            """, unsafe_allow_html=True)
 
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+
+    # Botón para resetear
+    if st.button("🔄 Subir otra imagen", key="reset-btn"):
+        st.experimental_rerun()
