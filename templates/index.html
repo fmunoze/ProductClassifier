@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador de Productos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #007BFF;
+            padding: 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            background-color: #e9f5ff;
+        }
+        .upload-area:hover {
+            background-color: #d0ebff;
+        }
+        #preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clasificador de Productos</h1>
+        <p>Sube una imagen de un producto para clasificarlo</p>
+        
+        <div class="upload-area" onclick="document.getElementById('file-input').click()">
+            <p>📷 Haz clic o arrastra una imagen aquí</p>
+            <input type="file" id="file-input" accept="image/*" style="display: none">
+        </div>
+
+        <img id="preview" class="hidden">
+
+        <button id="predict-btn" class="btn-primary hidden" onclick="predictImage()">🔍 Predecir</button>
+        <div id="result" class="hidden">
+            <p><strong>Categoría:</strong> <span id="predicted-class"></span></p>
+            <p><strong>Confianza:</strong> <span id="confidence"></span></p>
+        </div>
+
+        <button id="reset-btn" class="btn-secondary hidden" onclick="resetForm()">🔄 Subir otra imagen</button>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+        const predictBtn = document.getElementById('predict-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const result = document.getElementById('result');
+        const predictedClass = document.getElementById('predicted-class');
+        const confidence = document.getElementById('confidence');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    predictBtn.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function predictImage() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert("Por favor, selecciona una imagen.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    result.classList.remove('hidden');
+                    predictedClass.textContent = data.class;
+                    confidence.textContent = data.confidence;
+                    resetBtn.classList.remove('hidden');
+                    predictBtn.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la imagen');
+            });
+        }
+
+        function resetForm() {
+            fileInput.value = '';
+            preview.src = '';
+            preview.classList.add('hidden');
+            predictBtn.classList.add('hidden');
+            result.classList.add('hidden');
+            resetBtn.classList.add('hidden');
+        }
+
+        // Soporte para drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            fileInput.dispatchEvent(new Event('change'));
+        }
+    </script>
+</body>
+</html>
