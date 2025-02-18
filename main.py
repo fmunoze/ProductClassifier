@@ -180,7 +180,3 @@ if uploaded_file is not None:
 
         except Exception as e:
             st.error(f"Error: {str(e)}")
-
-    # Botón para resetear
-    if st.button("🔄 Subir otra imagen", key="reset-btn"):
-        st.experimental_rerun()
