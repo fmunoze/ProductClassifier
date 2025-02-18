@@ -62,23 +62,31 @@ classes = ['jeans', 'sofa', 'tshirt', 'tv']
 # Estilo personalizado con HTML y CSS en Streamlit
 st.markdown("""
     <style>
+        /* Estilo general */
+        body {
+            background-color: #0E1117;
+            color: #FAFAFA;
+        }
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #f4f4f9;
+            background-color: #1E1E1E;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
         .upload-area {
-            border: 2px dashed #007BFF;
+            border: 2px dashed #4CAF50;
             padding: 20px;
             margin: 20px 0;
             cursor: pointer;
             border-radius: 8px;
-            background-color: #e9f5ff;
+            background-color: #2E2E2E;
+            color: #FAFAFA;
         }
         .upload-area:hover {
-            background-color: #d0ebff;
+            background-color: #3E3E3E;
         }
         #preview {
             max-width: 100%;
@@ -91,20 +99,22 @@ st.markdown("""
             margin-top: 20px;
             font-size: 1.2em;
             padding: 10px;
-            background-color: #f8f9fa;
+            background-color: #2E2E2E;
             border-radius: 5px;
+            color: #FAFAFA;
         }
         .btn-primary {
-            background-color: #007BFF;
+            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
             padding: 10px;
             width: 100%;
             cursor: pointer;
+            font-size: 1em;
         }
         .btn-primary:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
         .btn-secondary {
             background-color: #6c757d;
@@ -114,12 +124,19 @@ st.markdown("""
             padding: 10px;
             width: 100%;
             cursor: pointer;
+            font-size: 1em;
         }
         .btn-secondary:hover {
-            background-color: #545b62;
+            background-color: #5a6268;
         }
         .hidden {
             display: none;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        p {
+            color: #FAFAFA;
         }
     </style>
 """, unsafe_allow_html=True)
