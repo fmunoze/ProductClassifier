@@ -135,9 +135,11 @@ st.markdown("""
         }
         h1 {
             color: var(--primary-color);
+            margin-bottom: 20px;
         }
         p {
             color: var(--text-color);
+            margin-bottom: 20px;
         }
         :root {
             --primary-color: #1E90FF;
