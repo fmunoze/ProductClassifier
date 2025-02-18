@@ -64,47 +64,48 @@ st.markdown("""
     <style>
         /* Estilo general */
         body {
-            background-color: #0E1117;
-            color: #FAFAFA;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #1E1E1E;
+            background-color: var(--container-bg);
             border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
         .upload-area {
-            border: 2px dashed #4CAF50;
+            border: 2px dashed var(--primary-color);
             padding: 20px;
             margin: 20px 0;
             cursor: pointer;
             border-radius: 8px;
-            background-color: #2E2E2E;
-            color: #FAFAFA;
+            background-color: var(--upload-area-bg);
+            color: var(--text-color);
         }
         .upload-area:hover {
-            background-color: #3E3E3E;
+            background-color: var(--upload-area-hover);
         }
         #preview {
             max-width: 100%;
             height: auto;
             margin-top: 15px;
             border-radius: 5px;
-            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
         #result {
             margin-top: 20px;
             font-size: 1.2em;
             padding: 10px;
-            background-color: #2E2E2E;
+            background-color: var(--result-bg);
             border-radius: 5px;
-            color: #FAFAFA;
+            color: var(--text-color);
         }
         .btn-primary {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 5px;
@@ -114,10 +115,10 @@ st.markdown("""
             font-size: 1em;
         }
         .btn-primary:hover {
-            background-color: #45a049;
+            background-color: var(--primary-hover);
         }
         .btn-secondary {
-            background-color: #6c757d;
+            background-color: var(--secondary-color);
             color: white;
             border: none;
             border-radius: 5px;
@@ -127,16 +128,38 @@ st.markdown("""
             font-size: 1em;
         }
         .btn-secondary:hover {
-            background-color: #5a6268;
+            background-color: var(--secondary-hover);
         }
         .hidden {
             display: none;
         }
         h1 {
-            color: #4CAF50;
+            color: var(--primary-color);
         }
         p {
-            color: #FAFAFA;
+            color: var(--text-color);
+        }
+        :root {
+            --primary-color: #1E90FF;
+            --primary-hover: #007BFF;
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --background-color: #FAFAFA;
+            --container-bg: #FFFFFF;
+            --upload-area-bg: #F0F2F6;
+            --upload-area-hover: #E0E3E9;
+            --result-bg: #F0F2F6;
+            --text-color: #333333;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #0E1117;
+                --container-bg: #1E1E1E;
+                --upload-area-bg: #2E2E2E;
+                --upload-area-hover: #3E3E3E;
+                --result-bg: #2E2E2E;
+                --text-color: #FAFAFA;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -159,24 +182,26 @@ if uploaded_file is not None:
 
     # Realizar la predicción
     if st.button("🔍 Predecir", key="predict-btn"):
-        try:
-            image = transform(image).unsqueeze(0)  # Añadir una dimensión de batch
+        with st.spinner("Procesando imagen..."):  # Barra de progreso
+            try:
+                image = transform(image).unsqueeze(0)  # Añadir una dimensión de batch
 
-            with torch.no_grad():
-                outputs = model(image)
-                _, predicted = torch.max(outputs, 1)
-                confidence = torch.nn.functional.softmax(outputs, dim=1)[0] * 100
+                with torch.no_grad():
+                    outputs = model(image)
+                    _, predicted = torch.max(outputs, 1)
+                    confidence = torch.nn.functional.softmax(outputs, dim=1)[0] * 100
 
-            # Obtener la clase predicha y la confianza
-            predicted_class = classes[predicted.item()]
-            confidence_value = confidence[predicted.item()].item()
+                # Obtener la clase predicha y la confianza
+                predicted_class = classes[predicted.item()]
+                confidence_value = confidence[predicted.item()].item()
 
-            st.markdown(f"""
-                <div id="result">
-                    <p><strong>Categoría:</strong> <span id="predicted-class">{predicted_class}</span></p>
-                    <p><strong>Confianza:</strong> <span id="confidence">{confidence_value:.2f}%</span></p>
-                </div>
-            """, unsafe_allow_html=True)
+                st.markdown(f"""
+                    <div id="result">
+                        <p><strong>Categoría:</strong> <span id="predicted-class">{predicted_class}</span></p>
+                        <p><strong>Confianza:</strong> <span id="confidence">{confidence_value:.2f}%</span></p>
+                    </div>
+                """, unsafe_allow_html=True)
 
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
