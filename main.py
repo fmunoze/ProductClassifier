@@ -2,11 +2,16 @@ import streamlit as st
 import torch
 from torchvision import transforms, models
 from PIL import Image
-import io
 import torch.nn as nn
 import torch.nn.functional as F
 import time
-import numpy as np
+
+# Configuración de la página
+st.set_page_config(
+    page_title="Clasificador de Productos",
+    page_icon="🛍️",
+    layout="wide"
+)
 
 # Definición de la clase ResNet para clasificación de productos
 class ResNetProductClassifier(nn.Module):
@@ -60,50 +65,7 @@ def predict(image, model):
         'all_probabilities': {classes[i]: probabilities[i].item() for i in range(len(classes))}
     }
 
-# Función para mostrar la predicción animada
-def animated_prediction(result):
-    progress_text = "Analizando imagen..."
-    my_bar = st.progress(0, text=progress_text)
-    
-    for percent_complete in range(101):
-        time.sleep(0.01)
-        my_bar.progress(percent_complete, text=progress_text)
-    
-    st.success("¡Análisis completado!")
-    
-    # Mostrar la categoría predicha con estilo
-    st.markdown(f"""
-    <div style='background-color: #f0f8ff; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #1E90FF;'>
-        <h2 style='margin-top: 0; color: #1E90FF;'>Resultado del Análisis</h2>
-        <h3>Categoría: <span style='color: #1E90FF; font-weight: bold;'>{result['class'].upper()}</span></h3>
-        <h4>Confianza: <span style='color: #1E90FF;'>{result['confidence']:.2f}%</span></h4>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Mostrar gráfico de confianza para todas las clases
-    confidences = result['all_probabilities']
-    
-    # Ordenar los valores de confianza de mayor a menor
-    sorted_confidences = {k: v for k, v in sorted(confidences.items(), key=lambda item: item[1], reverse=True)}
-    
-    # Crear barras coloridas para cada clase
-    for cls, conf in sorted_confidences.items():
-        # Color más intenso para la clase predicha
-        color = "#1E90FF" if cls == result['class'] else "#A9A9A9"
-        st.markdown(f"""
-        <div style='margin-bottom: 10px;'>
-            <div style='display: flex; align-items: center;'>
-                <div style='width: 100px; text-align: right; margin-right: 10px;'>{cls}</div>
-                <div style='flex-grow: 1; background-color: #f0f0f0; border-radius: 5px; height: 25px;'>
-                    <div style='width: {conf}%; height: 100%; background-color: {color}; border-radius: 5px; display: flex; align-items: center; justify-content: flex-end;'>
-                        <span style='margin-right: 5px; color: white; font-weight: bold;'>{conf:.1f}%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# Estilo personalizado con HTML y CSS en Streamlit
+# Estilo personalizado con CSS
 st.markdown("""
     <style>
         /* Estilo general */
@@ -123,17 +85,16 @@ st.markdown("""
             margin-top: 2rem;
             margin-bottom: 1rem;
         }
+        h3 {
+            color: #1E90FF;
+            font-size: 1.3rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
         .subtitle {
             color: #555;
             font-size: 1.2rem;
             text-align: center;
-            margin-bottom: 2rem;
-        }
-        .upload-container {
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
         .stButton>button {
@@ -155,16 +116,6 @@ st.markdown("""
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        /* Animación de carga */
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-        
         /* Footer */
         .footer {
             text-align: center;
@@ -175,22 +126,68 @@ st.markdown("""
             font-size: 0.8rem;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            .subtitle {
-                font-size: 1rem;
-            }
+        /* Columna vacía */
+        .empty-column {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #ccc;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Contenedor de resultados */
+        .result-box {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #1E90FF;
+        }
+        
+        /* Barras de confianza */
+        .confidence-bar-container {
+            margin-bottom: 10px;
+        }
+        .confidence-bar-label {
+            width: 100px;
+            text-align: right;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .confidence-bar-outer {
+            flex-grow: 1;
+            display: inline-block;
+            width: calc(100% - 120px);
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            height: 25px;
+            vertical-align: middle;
+        }
+        .confidence-bar-inner {
+            height: 100%;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .confidence-bar-text {
+            margin-right: 5px;
+            color: white;
+            font-weight: bold;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Interfaz de Streamlit
+# Título de la aplicación
 st.markdown("<h1>Clasificador Avanzado de Productos</h1>", unsafe_allow_html=True)
 st.markdown("<p class='subtitle'>Powered by ResNet: Sube una imagen para clasificar el producto</p>", unsafe_allow_html=True)
 
+# Información de la aplicación
 with st.expander("ℹ️ Acerca de esta app", expanded=False):
     st.markdown("""
     Esta aplicación utiliza un modelo de deep learning ResNet50 para clasificar imágenes de productos en cuatro categorías:
@@ -207,67 +204,140 @@ with st.expander("ℹ️ Acerca de esta app", expanded=False):
     3. Observa los resultados
     """)
 
-# Cargar el modelo
-try:
-    with st.spinner("Cargando modelo..."):
-        model = load_model()
-    st.success("¡Modelo cargado correctamente!")
-except Exception as e:
-    st.error(f"Error al cargar el modelo: {str(e)}")
-    st.stop()
-
-# Área principal
-col1, col2 = st.columns([3, 2])
-
-with col1:
-    st.markdown("<div class='upload-container'>", unsafe_allow_html=True)
+# Inicializar el estado de la sesión si no existe
+if 'model_loaded' not in st.session_state:
+    st.session_state.model_loaded = False
     
-    # Subir una imagen
-    uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
+if 'image' not in st.session_state:
+    st.session_state.image = None
     
-    if uploaded_file is not None:
-        # Mostrar la imagen subida
-        image = Image.open(uploaded_file).convert('RGB')
-        st.image(image, caption='Imagen subida', use_column_width=True)
-        
-        # Botón para realizar la predicción
-        if st.button("🔍 Analizar Imagen"):
+if 'analyze_clicked' not in st.session_state:
+    st.session_state.analyze_clicked = False
+    
+if 'result' not in st.session_state:
+    st.session_state.result = None
+
+# Cargar el modelo solo una vez
+if not st.session_state.model_loaded:
+    try:
+        with st.spinner("Cargando modelo..."):
+            model = load_model()
+            st.session_state.model = model
+            st.session_state.model_loaded = True
+        st.success("¡Modelo cargado correctamente!")
+    except Exception as e:
+        st.error(f"Error al cargar el modelo: {str(e)}")
+        st.warning("Por favor, asegúrate de tener el archivo 'resnet_ecommerce_classifier.pth' en el mismo directorio")
+        st.stop()
+else:
+    model = st.session_state.model
+
+# Función para realizar análisis al hacer clic en el botón
+def analyze_image():
+    if st.session_state.image is not None:
+        with st.spinner("Analizando imagen..."):
+            # Realizar predicción
             try:
-                # Realizar la predicción
-                result = predict(image, model)
+                # Simular carga con una barra de progreso
+                progress_bar = st.progress(0)
+                for i in range(101):
+                    time.sleep(0.01)  # Reducido para mejor experiencia
+                    progress_bar.progress(i)
                 
-                # Mostrar resultado animado
-                animated_prediction(result)
+                # Realizar predicción real
+                st.session_state.result = predict(st.session_state.image, model)
+                st.session_state.analyze_clicked = True
                 
+                # Eliminar la barra de progreso después de completar
+                progress_bar.empty()
+                st.success("¡Análisis completado!")
             except Exception as e:
                 st.error(f"Error durante la predicción: {str(e)}")
-    else:
-        # Mostrar mensaje cuando no hay imagen
-        st.info("👆 Sube una imagen para comenzar")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+                st.session_state.analyze_clicked = False
+                st.session_state.result = None
 
+# Dividir la pantalla en dos columnas
+col1, col2 = st.columns(2)
+
+# Primera columna: Subida y visualización de imagen
+with col1:
+    st.markdown("<h3>Sube tu imagen</h3>", unsafe_allow_html=True)
+    
+    # Subir una imagen
+    uploaded_file = st.file_uploader("Selecciona una imagen de producto", type=["jpg", "jpeg", "png"], key="uploader")
+    
+    # Botón para analizar (aparece arriba)
+    analyze_disabled = uploaded_file is None
+    if st.button("🔍 Analizar Imagen", disabled=analyze_disabled, key="analyze_button"):
+        analyze_image()
+    
+    # Mostrar la imagen si está cargada
+    if uploaded_file is not None:
+        try:
+            # Guardar imagen en el estado de la sesión
+            image = Image.open(uploaded_file).convert('RGB')
+            st.session_state.image = image
+            
+            # Mostrar imagen
+            st.image(image, caption='Imagen subida', use_column_width=True)
+        except Exception as e:
+            st.error(f"Error al cargar la imagen: {str(e)}")
+            st.session_state.image = None
+    else:
+        # Resetear el estado si no hay imagen
+        st.session_state.image = None
+        st.session_state.analyze_clicked = False
+        st.session_state.result = None
+        st.info("👆 Sube una imagen para comenzar")
+
+# Segunda columna: Resultados del análisis
 with col2:
-    st.markdown("<div class='upload-container'>", unsafe_allow_html=True)
-    st.markdown("### Ejemplos de productos")
+    st.markdown("<h3>Resultados del análisis</h3>", unsafe_allow_html=True)
     
-    # Ejemplos de categorías
-    st.markdown("""
-    * **Jeans**: Pantalones vaqueros, jeans, denim
-    * **Sofa**: Sofás, sillones, muebles de sala
-    * **T-shirt**: Camisetas, polos, tops
-    * **TV**: Televisores, monitores, pantallas
-    """)
-    
-    st.markdown("### Consejos para mejores resultados")
-    st.markdown("""
-    * Usa imágenes de buena calidad
-    * Asegúrate que el producto esté claramente visible
-    * Evita imágenes con múltiples productos
-    * El fondo simple mejora la precisión
-    """)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+    # Mostrar resultados solo si se ha analizado una imagen
+    if st.session_state.image is None:
+        st.markdown('<div class="empty-column">Carga una imagen para ver los resultados aquí</div>', unsafe_allow_html=True)
+    elif not st.session_state.analyze_clicked or st.session_state.result is None:
+        st.markdown('<div class="empty-column">Haz clic en "Analizar Imagen" para ver los resultados</div>', unsafe_allow_html=True)
+    else:
+        # Mostrar resultado con la categoría predicha
+        result = st.session_state.result
+        
+        # Contenedor de resultados
+        st.markdown(f"""
+        <div class="result-box">
+            <h2 style="margin-top: 0; color: #1E90FF;">Resultado del Análisis</h2>
+            <h3>Categoría: <span style="color: #1E90FF; font-weight: bold;">{result['class'].upper()}</span></h3>
+            <h4>Confianza: <span style="color: #1E90FF;">{result['confidence']:.2f}%</span></h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Mostrar gráfico de confianza para todas las clases
+        st.subheader("Confianza por categoría")
+        
+        # Ordenar los valores de confianza de mayor a menor
+        confidences = result['all_probabilities']
+        sorted_confidences = {k: v for k, v in sorted(confidences.items(), key=lambda item: item[1], reverse=True)}
+        
+        # Crear barras coloridas para cada clase de forma separada (no anidada en el mismo contenedor)
+        for cls, conf in sorted_confidences.items():
+            # Color más intenso para la clase predicha
+            color = "#1E90FF" if cls == result['class'] else "#A9A9A9"
+            
+            # Asegurar que el ancho sea visible incluso con valores pequeños
+            width = max(conf, 1)
+            
+            # Contenedor separado para cada barra
+            st.markdown(f"""
+            <div class="confidence-bar-container">
+                <span class="confidence-bar-label">{cls}</span>
+                <div class="confidence-bar-outer">
+                    <div class="confidence-bar-inner" style="width: {width}%; background-color: {color};">
+                        <span class="confidence-bar-text">{conf:.1f}%</span>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("<div class='footer'>© 2025 E-commerce Product Classifier | Powered by ResNet</div>", unsafe_allow_html=True)
