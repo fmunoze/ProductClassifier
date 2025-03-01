@@ -1,25 +1,24 @@
+# Dependencias principales
+streamlit==1.36.0
+torch==2.6.0
+torchvision==0.21.0
+pillow==11.1.0
+numpy==2.2.3
+
+# Dependencias secundarias
 blinker==1.9.0
 click==8.1.8
 colorama==0.4.6
 filelock==3.17.0
 Flask==3.1.0
 fsspec==2025.2.0
+gunicorn==21.2.0
 itsdangerous==2.2.0
 Jinja2==3.1.5
 MarkupSafe==3.0.2
 mpmath==1.3.0
 networkx==3.4.2
-numpy==2.2.3
-pillow==11.1.0
 setuptools==75.8.0
 sympy==1.13.1
-torch==2.6.0
-torchvision==0.21.0
 typing_extensions==4.12.2
 Werkzeug==3.1.3
-gunicorn==21.2.0
-streamlit==1.36.0
-torch==2.6.0
-torchvision==0.21.0
-pillow==11.1.0
-numpy==2.2.3
