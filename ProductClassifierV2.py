@@ -9,8 +9,6 @@ Original file is located at
 https://appuctclassifier-nns8ekvzblgq2gkh3rwxud.streamlit.app/
 """
 
-!pip install torch-summary
-
 import os
 import numpy as np
 import pandas as pd
